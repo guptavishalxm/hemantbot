@@ -15,6 +15,7 @@ const getMainMenu = () => {
     ]);
 };
 
+
 // Main function to initialize and provide the bot
 const setupBot = (token) => {
     const bot = new Telegraf(token);
