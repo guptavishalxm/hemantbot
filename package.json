@@ -1,0 +1,22 @@
+{
+  "name": "hemantbot",
+  "version": "1.0.0",
+  "description": "Telegram Cricket Bot for Telegram Ads",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "vercel",
+    "cricket"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "telegraf": "^4.15.5"
+  }
+}
