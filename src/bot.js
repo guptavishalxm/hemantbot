@@ -9,7 +9,7 @@ const getMainMenu = () => {
         [Markup.button.url(content.channels[1].name, content.channels[1].url)],
         // Content buttons underneath to still satisfy Telegram Ad policies
         [
-            Markup.button.callback('🏏 Daily Insights', 'action_insights'),
+            Markup.button.callback('🏏 Aaj ki Insights', 'action_insights'),
             Markup.button.callback('📚 Cricket Guide', 'action_education')
         ]
     ]);
