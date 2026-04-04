@@ -114,6 +114,86 @@ const setupBot = (token) => {
         await ctx.answerCbQuery();
     });
 
+    bot.command('broadcast', async (ctx) => {
+        try {
+            await connectDB();
+            
+            // 1. Authenticate Admin (allow multiple comma-separated IDs)
+            const adminIds = (process.env.ADMIN_ID || '').split(',').map(id => id.trim());
+            if (!adminIds.includes(String(ctx.from.id))) {
+                // Optional: return ctx.reply('Unauthorized.');
+                return;
+            }
+
+            // 2. Fetch all users to broadcast to
+            const users = await User.find({ status: { $ne: 'blocked' } });
+            if (users.length === 0) {
+                return ctx.reply('No active users found in database.');
+            }
+
+            // 3. Determine if admin replied or typed text
+            const isReply = !!ctx.message.reply_to_message;
+            let textMsg = '';
+            
+            if (!isReply) {
+                textMsg = ctx.message.text.replace('/broadcast', '').trim();
+                if (!textMsg) {
+                    return ctx.reply('Please reply to a message with /broadcast OR type /broadcast <message>');
+                }
+            }
+
+            const statusMsg = await ctx.reply(`Starting broadcast to ${users.length} users... (This may take some time)`);
+
+            let successCount = 0;
+            let failCount = 0;
+
+            // 4. Safely broadcast to every user
+            for (const user of users) {
+                try {
+                    if (isReply) {
+                        // copyMessage preserves formatting, photos, videos, buttons perfectly
+                        await ctx.telegram.copyMessage(
+                            user.chatId,
+                            ctx.chat.id,
+                            ctx.message.reply_to_message.message_id
+                        );
+                    } else {
+                        // Sending standard message
+                        await ctx.telegram.sendMessage(user.chatId, textMsg, {
+                            parse_mode: 'Markdown'
+                        });
+                    }
+                    successCount++;
+                    
+                    // Crucial: sleep 40ms to avoid breaking Telegram's 30 msgs/sec limit
+                    await new Promise(res => setTimeout(res, 40));
+                } catch (error) {
+                    failCount++;
+                    // If they blocked the bot, we can mark them so we skip them next time
+                    if (error.message.includes('bot was blocked') || error.message.includes('chat not found')) {
+                        try {
+                           user.status = 'blocked';
+                           await user.save();
+                        } catch(e) {}
+                    }
+                }
+            }
+
+            // Update admin upon completion
+            await ctx.telegram.editMessageText(
+                ctx.chat.id, 
+                statusMsg.message_id, 
+                undefined, 
+                `✅ *Broadcast Complete*\n\n*Success:* ${successCount}\n*Failed/Blocked:* ${failCount}`,
+                { parse_mode: 'Markdown' }
+            );
+
+        } catch (globalError) {
+            console.error('Broadcast Error:', globalError);
+            ctx.reply('An error occurred during broadcasting.');
+        }
+    });
+
     return bot;
 };
 
