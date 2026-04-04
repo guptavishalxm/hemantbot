@@ -4,6 +4,12 @@ const content = require('../src/content');
 const { getMainMenu } = require('../src/bot');
 
 module.exports = async (request, response) => {
+    // Basic security: require a ?secret=YOUR_SECRET in the URL to prevent unauthorized triggers
+    const { secret } = request.query;
+    if (secret !== process.env.CRON_SECRET) {
+        return response.status(401).send('Unauthorized');
+    }
+
     if (!process.env.BOT_TOKEN) {
         return response.status(500).send('BOT_TOKEN missing');
     }
