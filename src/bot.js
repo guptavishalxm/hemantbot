@@ -1,5 +1,6 @@
 const { Telegraf, Markup } = require('telegraf');
 const content = require('./content');
+const { User, connectDB } = require('./db');
 
 // Helper to create the main navigation markup
 const getMainMenu = () => {
@@ -15,13 +16,30 @@ const getMainMenu = () => {
     ]);
 };
 
-
 // Main function to initialize and provide the bot
 const setupBot = (token) => {
     const bot = new Telegraf(token);
 
+    // Track user when they start
     bot.start(async (ctx) => {
         try {
+            await connectDB();
+            
+            // Save user to database if they don't exist
+            const chatId = String(ctx.from.id);
+            await User.findOneAndUpdate(
+                { chatId },
+                { 
+                    $setOnInsert: { 
+                        chatId, 
+                        firstName: ctx.from.first_name,
+                        username: ctx.from.username,
+                        status: 'pending'
+                    }
+                },
+                { upsert: true }
+            );
+
             await ctx.replyWithPhoto(
                 { url: content.welcomeImage },
                 {
@@ -37,6 +55,27 @@ const setupBot = (token) => {
                 parse_mode: 'Markdown',
                 ...getMainMenu()
             });
+        }
+    });
+
+    // Listen for users joining the channels (requires bot to be Admin in those channels)
+    bot.on('chat_member', async (ctx) => {
+        try {
+            await connectDB();
+            const newMember = ctx.chatMember.new_chat_member;
+            
+            // If they became a member or administrator
+            if (newMember.status === 'member' || newMember.status === 'administrator') {
+                const chatId = String(newMember.user.id);
+                // Mark them as joined
+                await User.findOneAndUpdate(
+                    { chatId },
+                    { status: 'joined' }
+                );
+                console.log(`User ${chatId} joined a channel. Marked as joined in DB.`);
+            }
+        } catch (error) {
+            console.error('Error in chat_member:', error);
         }
     });
 
@@ -78,4 +117,4 @@ const setupBot = (token) => {
     return bot;
 };
 
-module.exports = { setupBot };
+module.exports = { setupBot, getMainMenu };
