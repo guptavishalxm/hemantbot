@@ -15,11 +15,5 @@
       "src": "/(.*)",
       "dest": "/api/webhook.js"
     }
-  ],
-  "crons": [
-    {
-      "path": "/api/cron",
-      "schedule": "0 * * * *"
-    }
   ]
 }
