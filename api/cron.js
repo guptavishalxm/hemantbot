@@ -23,18 +23,22 @@ module.exports = async (request, response) => {
             let messageToSend = null;
             let nextStep = user.followUpStep;
 
-            if (user.followUpStep === 0 && hoursSinceStart >= 1) {
-                // Send first message after >= 1 hour
+            if (user.followUpStep === 0 && hoursSinceStart >= (5 / 60)) {
+                // Send 5-minute message after >= 5 minutes
                 messageToSend = content.followUpMessages[0];
                 nextStep = 1;
-            } else if (user.followUpStep === 1 && hoursSinceStart >= 24) {
-                // Send second message after >= 24 hours
+            } else if (user.followUpStep === 1 && hoursSinceStart >= 1) {
+                // Send second message after >= 1 hour
                 messageToSend = content.followUpMessages[1];
                 nextStep = 2;
-            } else if (user.followUpStep === 2 && hoursSinceStart >= 48) {
-                // Send third message after >= 48 hours
+            } else if (user.followUpStep === 2 && hoursSinceStart >= 24) {
+                // Send third message after >= 24 hours
                 messageToSend = content.followUpMessages[2];
                 nextStep = 3;
+            } else if (user.followUpStep === 3 && hoursSinceStart >= 48) {
+                // Send fourth message after >= 48 hours
+                messageToSend = content.followUpMessages[3];
+                nextStep = 4;
             }
 
             if (messageToSend) {

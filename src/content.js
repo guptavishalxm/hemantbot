@@ -17,6 +17,9 @@ module.exports = {
 
   // Drip campaign messages to send periodically if they haven't joined
   followUpMessages: [
+    // Step 0: Sent after 5 minutes
+    `⚡ **Sirf 5 Minute reh gaye hain!**\n\nKya aapne abhi tak apna FREE VIP slot claim nahi kiya? Aaj ka sabse bada match shuru hone wala hai, aur hamari premium pitch report update ho chuki hai.\n\n👇 **Turant niche click karke channel me enter karein!**`,
+
     // Step 1: Sent fairly soon after start (e.g. 1-2 hours)
     `⏳ **Hurry up! Sirf kuch hi free spots bache hain!**\n\nAgar aap abhi tak humare VIP channel se nahi jude, to aap bahot bada profit miss kar rahe hain. Aaj ke match ki exclusive pitch analysis free me mil rahi hai.\n\n👇 **Abhi niche click karke join karein!**`,
     
